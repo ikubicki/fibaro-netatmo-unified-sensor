@@ -57,6 +57,10 @@ function Config:getTimeoutInterval()
     return tonumber(self.interval) * 60000
 end
 
+function Config:getDeviceType()
+    return self.type
+end
+
 --[[
 This function takes variables and sets as global variables if those are not set already.
 This way, adding other devices might be optional and leaves option for users, 
@@ -69,6 +73,7 @@ function Config:init()
     self.password = self.app:getVariable('Password')
     self.deviceID = tostring(self.app:getVariable('DeviceID'))
     self.moduleID = tostring(self.app:getVariable('ModuleID'))
+    self.type = tostring(self.app:getVariable('Type'))
     self.interval = self.app:getVariable('Interval')
     self.token = self.app:getVariable('AccessToken')
 
