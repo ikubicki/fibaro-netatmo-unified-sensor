@@ -64,7 +64,6 @@ function Netatmo:searchDevices(types, callback)
 end
 
 function Netatmo:getSensorData(types, moduleID, callback)
-    moduleID = "02:00:00:58:af:b6"
     if callback == nil then
         callback = function() end
     end
@@ -107,9 +106,16 @@ function Netatmo:getSensorData(types, moduleID, callback)
             self:setDeviceID(stations[1].id)
         end
         if moduleID == nil or string.len(moduleID) < 10 then
-            moduleID = stations[1].modules[1].id
-            QuickApp:trace('Assigning ModuleID: ' .. moduleID)
-            self:setModuleID(moduleID)
+            moduleID = ""
+            for _, module in pairs(stations[1].modules) do
+                if utils:contains(types, module.type) then
+                    moduleID = module.id
+                end
+            end
+            if moduleID ~= nil then
+                QuickApp:trace('Assigning ModuleID: ' .. moduleID)
+                self:setModuleID(moduleID)
+            end
         end
         if string.len(moduleID) > 10 then
             self:auth(authCallback)
