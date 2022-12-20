@@ -82,7 +82,6 @@ function QuickApp:getType()
         return { "NAModule2" } 
     end
     if self.type == "com.fibaro.rainSensor" or self.config:getDeviceType() == "Rain" then 
-        self:updateProperty("unit", "km/h")
         return { "NAModule3" } 
     end
     if self.type == "com.fibaro.humiditySensor" or self.config:getDeviceType() == "Humidity" then 
