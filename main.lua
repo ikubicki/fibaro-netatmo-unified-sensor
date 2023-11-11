@@ -1,6 +1,7 @@
 --[[
 Netatmo Unified Sensor
 @author ikubicki
+@version 1.1.0
 ]]
 function QuickApp:onInit()
     self.config = Config:new(self)
@@ -56,7 +57,7 @@ function QuickApp:searchEvent()
     self:debug(self.i18n:get('searching-devices'))
     self:updateView("button2_1", "text", self.i18n:get('searching-devices'))
     local searchDevicesCallback = function(stations)
-        QuickApp:debug(json.encode(stations))
+        -- QuickApp:debug(json.encode(stations))
         -- printing results
         for _, station in pairs(stations) do
             QuickApp:trace(string.format(self.i18n:get('search-row-station'), station.name, station.id))

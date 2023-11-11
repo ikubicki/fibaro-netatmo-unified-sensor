@@ -11,9 +11,7 @@ Data updates every 5 minutes by default.
 
 `ClientSecret` - Netatmo client secret
 
-`Username` - Netatmo username
-
-`Password` - Netatmo password
+`RefreshToken` - Refresh token
 
 ### Optional values
 
@@ -28,6 +26,16 @@ Other sensors (because they are using generic type - Multilevel sensor type) all
 
 `AccessToken` - Allows to set own access token and bypass credentials authentication.
 
+## Installation
+
+To acquire required parameters, you need to go to Netatmo Connect site and create new application. Once that's done, you will be able to get client ID and client secret. To get refresh token, you need to use a Token generator (section below you get client id and client secret).
+From generated token you need to use a Refresh Token value.
+This should allow you to run quick application in your Fibaro Home Center device.
+
 ## Integration
 
 This quick application integrates with other Netatmo dedicated quick apps for devices. It will automatically populate configuration to new virtual Netatmo devices.
+
+## Support
+
+Due to horrible user experience with Fibaro Marketplace, for better communication I recommend to contact with me through GitHub or create an issue in the repository.

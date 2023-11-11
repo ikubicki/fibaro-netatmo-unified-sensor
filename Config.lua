@@ -53,6 +53,10 @@ function Config:setAccessToken(token)
     self.token = token
 end
 
+function Config:getRefreshToken()
+    return self.rtoken
+end
+
 function Config:getTimeoutInterval()
     return tonumber(self.interval) * 60000
 end
@@ -76,6 +80,7 @@ function Config:init()
     self.type = tostring(self.app:getVariable('Type'))
     self.interval = self.app:getVariable('Interval')
     self.token = self.app:getVariable('AccessToken')
+    self.rtoken = self.app:getVariable('RefreshToken')
 
     local storedClientID = Globals:get('netatmo_client_id')
     local storedClientSecret = Globals:get('netatmo_client_secret')
