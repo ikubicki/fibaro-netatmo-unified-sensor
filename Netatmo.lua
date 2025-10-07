@@ -6,14 +6,11 @@ class 'Netatmo'
 
 function Netatmo:new(config)
     self.config = config
-    self.user = config:getUsername()
-    self.pass = config:getPassword()
     self.client_id = config:getClientID()
     self.client_secret = config:getClientSecret()
     self.device_id = config:getDeviceID()
     self.module_id = config:getModuleID()
     self.access_token = config:getAccessToken()
-    self.token = Globals:get('netatmo_atoken', '')
     self.refresh_token = config:getRefreshToken()
     self.http = HTTPClient:new({})
     return self
@@ -168,9 +165,9 @@ function Netatmo:getStationsData(callback, attempt)
         attempt = 0
     end
     local fail = function(response)
-        QuickApp:error('Unable to pull devices')
-        QuickApp:debug(json.encode(response.data))
-        Netatmo:setToken('')
+        -- QuickApp:error('Unable to pull devices')
+        -- QuickApp:debug(json.encode(response.data))
+        self.config:setAccessToken('')
         if attempt < 3 then
             attempt = attempt + 1
             fibaro.setTimeout(3000, function()
@@ -197,62 +194,53 @@ function Netatmo:getStationsData(callback, attempt)
         url = url .. '?device_id=' .. self.device_id
     end
     local headers = {
-        Authorization = "Bearer " .. self:getToken()
+        Authorization = "Bearer " .. self:getAccessToken()
     }
     self.http:get(url, success, fail, headers)
 end
 
 function Netatmo:auth(callback)
-    if string.len(self:getToken()) > 10 then
+    if string.len(self:getAccessToken()) > 10 then
         -- QuickApp:debug('Already authenticated')
         if callback ~= nil then
             callback({})
         end
         return
     end
-    if string.len(self.access_token) > 10 then
-        if callback ~= nil then
-            Netatmo:setToken(self.access_token)
-            callback({})
-        end
+    if string.len(self.refresh_token) < 10 then
+        QuickApp:error('No refresh token available. Cannot authenticate the device.')
+        fail({
+            error = "No refresh token available. Cannot authenticate the device."
+        })
         return
     end
     local data = {
-        ["grant_type"] = 'password',
-        ["scope"] = 'read_station',
+        ["grant_type"] = 'refresh_token',
+        ["refresh_token"] = self.refresh_token,
         ["client_id"] = self.client_id,
         ["client_secret"] = self.client_secret,
-        ["username"] = self.user,
-        ["password"] = self.pass,
     }
-    if string.len(self.refresh_token) > 10 then
-        data = {
-            ["grant_type"] = 'refresh_token',
-            ["refresh_token"] = self.refresh_token,
-            ["client_id"] = self.client_id,
-            ["client_secret"] = self.client_secret,
-        }
-    end
     local fail = function(response)
         QuickApp:error('Unable to authenticate')
-        if self.access_token == self.token then
-            QuickApp:error('Removing configured AccessToken')
-            self.config:setAccessToken('')
+        if self.access_token ~= "" then
+            self:setAccessToken('')
         end
-        Netatmo:setToken('')
     end
     local success = function(response)
-        if response.status > 299 then
+        --QuickApp:debug(response.status)
+        --QuickApp:debug(response.data)
+        if response.status > 299 or response.status < 200 then
             fail(response)
             return
         end
         local data = json.decode(response.data)
-        Netatmo:setToken(data.access_token)
+        Netatmo:setAccessToken(data.access_token)
         if callback ~= nil then
             callback(data)
         end
     end
-    self.http:postForm('https://api.netatmo.net/oauth2/token', data, success, fail)
+    -- QuickApp:debug(json.encode(data))
+    self.http:postForm('https://api.netatmo.com/oauth2/token', data, success, fail)
 end
 
 function Netatmo:setDeviceID(deviceID)
@@ -265,19 +253,14 @@ function Netatmo:setModuleID(moduleID)
     self.config:setModuleID(moduleID)
 end
 
-function Netatmo:setToken(token)
-    self.token = token
-    Globals:set('netatmo_atoken', token)
+function Netatmo:getAccessToken()
+    if self.access_token ~= "" then
+        return self.access_token
+    end
+    return self.config:getAccessToken()
 end
 
-function Netatmo:getToken()
-    if not self.token and self.access_token ~= nil then
-        self.token = self.access_token
-    end
-    if string.len(self.token) > 10 then
-        return self.token
-    elseif string.len(Globals:get('netatmo_atoken', '')) > 10 then
-        return Globals:get('netatmo_atoken', '')
-    end
-    return ""
+function Netatmo:setAccessToken(access_token)
+    self.access_token = access_token
+    self.config:setAccessToken(access_token)
 end

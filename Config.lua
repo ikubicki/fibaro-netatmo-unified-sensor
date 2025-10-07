@@ -18,14 +18,6 @@ function Config:getClientSecret()
     return self.clientSecret
 end
 
-function Config:getUsername()
-    return self.username
-end
-
-function Config:getPassword()
-    return self.password
-end
-
 function Config:getDeviceID()
     return self.deviceID
 end
@@ -45,12 +37,15 @@ function Config:setModuleID(moduleID)
 end
 
 function Config:getAccessToken()
-    return self.token
+    if self.atoken ~= "" then
+        return self.atoken
+    end
+    return Globals:set('netatmo_atoken', atoken)
 end
 
-function Config:setAccessToken(token)
-    self.app:setVariable("AccessToken", token)
-    self.token = token
+function Config:setAccessToken(atoken)
+    self.atoken = atoken
+    Globals:set('netatmo_atoken', atoken)
 end
 
 function Config:getRefreshToken()
@@ -73,19 +68,15 @@ what they want to add into HC3 virtual devices.
 function Config:init()
     self.clientID = self.app:getVariable('ClientID')
     self.clientSecret = self.app:getVariable('ClientSecret')
-    self.username = self.app:getVariable('Username')
-    self.password = self.app:getVariable('Password')
     self.deviceID = tostring(self.app:getVariable('DeviceID'))
     self.moduleID = tostring(self.app:getVariable('ModuleID'))
     self.type = tostring(self.app:getVariable('Type'))
     self.interval = self.app:getVariable('Interval')
-    self.token = self.app:getVariable('AccessToken')
     self.rtoken = self.app:getVariable('RefreshToken')
+    self.atoken = Globals:get('netatmo_atoken', '')
 
     local storedClientID = Globals:get('netatmo_client_id')
     local storedClientSecret = Globals:get('netatmo_client_secret')
-    local storedUsername = Globals:get('netatmo_username')
-    local storedPassword = Globals:get('netatmo_password')
     local storedInterval = Globals:get('netatmo_interval')
 
     -- handling clientID
@@ -101,20 +92,6 @@ function Config:init()
         self.clientSecret = storedClientSecret
     elseif (storedClientSecret == nil and self.clientSecret) then -- or storedClientSecret ~= self.clientSecret then
         Globals:set('netatmo_client_secret', self.clientSecret)
-    end
-    -- handling username
-    if string.len(self.username) < 4 and string.len(storedUsername) > 3 then
-        self.app:setVariable("Username", storedUsername)
-        self.username = storedUsername
-    elseif (storedUsername == nil and self.username) then -- or storedUsername ~= self.username then
-        Globals:set('netatmo_username', self.username)
-    end
-    -- handling password
-    if string.len(self.password) < 4 and string.len(storedPassword) > 3 then
-        self.app:setVariable("Password", storedPassword)
-        self.password = storedPassword
-    elseif (storedPassword == nil and self.password) then -- or storedPassword ~= self.password then
-        Globals:set('netatmo_password', self.password)
     end
     -- handling interval
     if not self.interval or self.interval == "" then

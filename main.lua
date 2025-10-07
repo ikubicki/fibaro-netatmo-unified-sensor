@@ -1,7 +1,7 @@
 --[[
 Netatmo Unified Sensor
 @author ikubicki
-@version 1.1.0
+@version 1.1.1
 ]]
 function QuickApp:onInit()
     self.config = Config:new(self)
