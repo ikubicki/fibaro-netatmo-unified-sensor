@@ -44,6 +44,10 @@ Due to horrible user experience with Fibaro Marketplace, for better communicatio
 
 ## Changelog
 
- * **v.1.1.1**
+ * **v.1.1.2**
+   * Fixed a bug where globally stored access token was invalidated
+   * Application will automatically update refresh token in QA variables section
+
+* **v.1.1.1**
    * Changed refresh token url
    * Configs cleanup in Netatmo client file

@@ -12,7 +12,9 @@ function Netatmo:new(config)
     self.module_id = config:getModuleID()
     self.access_token = config:getAccessToken()
     self.refresh_token = config:getRefreshToken()
-    self.http = HTTPClient:new({})
+    self.http = HTTPClient:new({
+        baseUrl = "https://api.netatmo.com"
+    })
     return self
 end
 
@@ -167,7 +169,13 @@ function Netatmo:getStationsData(callback, attempt)
     local fail = function(response)
         -- QuickApp:error('Unable to pull devices')
         -- QuickApp:debug(json.encode(response.data))
-        self.config:setAccessToken('')
+        if response.status == 400 then
+            return
+        end
+        if response.status == 401 then
+            self.config:setAccessToken('')
+            return
+        end
         if attempt < 3 then
             attempt = attempt + 1
             fibaro.setTimeout(3000, function()
@@ -175,7 +183,7 @@ function Netatmo:getStationsData(callback, attempt)
                 local authCallback = function(response)
                     self:getStationsData(callback, attempt)
                 end
-                Netatmo:auth(authCallback)
+                self:auth(authCallback)
             end)
         end
     end
@@ -189,7 +197,7 @@ function Netatmo:getStationsData(callback, attempt)
             callback(data.body.devices)
         end
     end
-    local url = 'https://api.netatmo.com/api/getstationsdata'
+    local url = '/api/getstationsdata'
     if string.len(self.device_id) > 1 then
         url = url .. '?device_id=' .. self.device_id
     end
@@ -207,13 +215,6 @@ function Netatmo:auth(callback)
         end
         return
     end
-    if string.len(self.refresh_token) < 10 then
-        QuickApp:error('No refresh token available. Cannot authenticate the device.')
-        fail({
-            error = "No refresh token available. Cannot authenticate the device."
-        })
-        return
-    end
     local data = {
         ["grant_type"] = 'refresh_token',
         ["refresh_token"] = self.refresh_token,
@@ -222,25 +223,36 @@ function Netatmo:auth(callback)
     }
     local fail = function(response)
         QuickApp:error('Unable to authenticate')
-        if self.access_token ~= "" then
+        QuickApp:error('Error code: ' .. response.status)
+        if self.access_token ~= "" and response.status == 401 then
             self:setAccessToken('')
         end
+        if callback ~= nil then
+            callback(response)
+        end
+    end
+    if string.len(self.refresh_token) < 10 then
+        QuickApp:error('No refresh token available. Cannot authenticate the device.')
+        fail({
+            error = "No refresh token available. Cannot authenticate the device.",
+            status = 400
+        })
+        return
     end
     local success = function(response)
-        --QuickApp:debug(response.status)
-        --QuickApp:debug(response.data)
         if response.status > 299 or response.status < 200 then
             fail(response)
             return
         end
         local data = json.decode(response.data)
-        Netatmo:setAccessToken(data.access_token)
+        self:setAccessToken(data.access_token)
+        self:setRefreshToken(data.refresh_token)
         if callback ~= nil then
             callback(data)
         end
     end
     -- QuickApp:debug(json.encode(data))
-    self.http:postForm('https://api.netatmo.com/oauth2/token', data, success, fail)
+    self.http:postForm('/oauth2/token', data, success, fail)
 end
 
 function Netatmo:setDeviceID(deviceID)
@@ -261,6 +273,12 @@ function Netatmo:getAccessToken()
 end
 
 function Netatmo:setAccessToken(access_token)
+    QuickApp:debug("Setting Access Token to " .. access_token)
     self.access_token = access_token
     self.config:setAccessToken(access_token)
+end
+
+function Netatmo:setRefreshToken(refresh_token)
+    self.refresh_token = refresh_token
+    self.config:setRefreshToken(refresh_token)
 end

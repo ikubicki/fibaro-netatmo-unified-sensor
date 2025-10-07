@@ -40,7 +40,7 @@ function Config:getAccessToken()
     if self.atoken ~= "" then
         return self.atoken
     end
-    return Globals:set('netatmo_atoken', atoken)
+    return Globals:get('netatmo_atoken')
 end
 
 function Config:setAccessToken(atoken)
@@ -50,6 +50,12 @@ end
 
 function Config:getRefreshToken()
     return self.rtoken
+end
+
+function Config:setRefreshToken(rtoken)
+    self.rtoken = rtoken
+    Globals:set('netatmo_rtoken', rtoken)
+    self.app:setVariable("RefreshToken", rtoken)
 end
 
 function Config:getTimeoutInterval()
