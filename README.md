@@ -44,6 +44,9 @@ Due to horrible user experience with Fibaro Marketplace, for better communicatio
 
 ## Changelog
 
+ * **v.1.1.3**
+   * HandlesHandles 403 response (next to 401) on expired access token
+
  * **v.1.1.2**
    * Fixed a bug where globally stored access token was invalidated
    * Application will automatically update refresh token in QA variables section

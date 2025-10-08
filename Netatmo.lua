@@ -167,14 +167,12 @@ function Netatmo:getStationsData(callback, attempt)
         attempt = 0
     end
     local fail = function(response)
-        -- QuickApp:error('Unable to pull devices')
-        -- QuickApp:debug(json.encode(response.data))
         if response.status == 400 then
             return
         end
-        if response.status == 401 then
+        if response.status == 401 or response.status == 403 then
             self.config:setAccessToken('')
-            return
+            attempt = 2
         end
         if attempt < 3 then
             attempt = attempt + 1
