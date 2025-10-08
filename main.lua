@@ -1,7 +1,7 @@
 --[[
 Netatmo Unified Sensor
 @author ikubicki
-@version 1.1.3
+@version 1.2.0
 ]]
 function QuickApp:onInit()
     self.config = Config:new(self)
@@ -43,10 +43,20 @@ function QuickApp:pullNetatmoData()
         end
         self:updateView("label", "text", string.format(self.i18n:get('last-update'), os.date('%Y-%m-%d %H:%M:%S')))
         self:updateView("button2_2", "text", self.i18n:get('refresh'))
+        if self.properties.dead == true then
+            self:setDeadProperty(false)    
+        end
+    end
+    local fallback = function(response)
+        self:updateView("label", "text", string.format(self.i18n:get('error-updates'), response.status, response.data))
+        self:updateView("button2_2", "text", self.i18n:get('refresh'))
+        if self.properties.dead == false then
+            self:setDeadProperty(true)
+        end
     end
     local types = self:getType()
     local id = self.config:getModuleID()
-    self.netatmo:getSensorData(types, id, getSensorDataCallback)
+    self.netatmo:getSensorData(types, id, getSensorDataCallback, fallback)
 end
 
 function QuickApp:refreshEvent()
@@ -69,9 +79,19 @@ function QuickApp:searchEvent()
         end
         self:updateView("button2_1", "text", self.i18n:get('search-devices'))
         self:updateView("label", "text", string.format(self.i18n:get('check-logs'), 'QUICKAPP' .. self.id))
+        if self.properties.dead == true then
+            self:setDeadProperty(false)    
+        end
+    end
+    local fallback = function(response)
+        self:updateView("label", "text", string.format(self.i18n:get('error-search'), response.status, response.data))
+        self:updateView("button2_1", "text", self.i18n:get('search-devices'))
+        if self.properties.dead == false then
+            self:setDeadProperty(true)
+        end
     end
     local types = self:getType()
-    self.netatmo:searchDevices(types, searchDevicesCallback)
+    self.netatmo:searchDevices(types, searchDevicesCallback, fallback)
 end
 
 function QuickApp:getType()
@@ -157,4 +177,12 @@ function QuickApp:getProperty()
     if self.config:getDeviceType() == "CO2" then
         return "CO2"
     end
+end
+
+function QuickApp:setDeadProperty(value)
+    return api.put('/devices/' .. self.id, {
+        properties = {
+            dead = value
+        }
+    })
 end

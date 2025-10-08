@@ -18,7 +18,7 @@ function Netatmo:new(config)
     return self
 end
 
-function Netatmo:searchDevices(types, callback)
+function Netatmo:searchDevices(types, callback, fallback)
     if #types < 1 then types = nil end
     local buildModule = function(module)
         return {
@@ -58,12 +58,12 @@ function Netatmo:searchDevices(types, callback)
         end
     end
     local authCallback = function(response)
-        self:getStationsData(getStationsDataCallback)
+        self:getStationsData(getStationsDataCallback, fallback)
     end
-    self:auth(authCallback)
+    self:auth(authCallback, fallback)
 end
 
-function Netatmo:getSensorData(types, moduleID, callback)
+function Netatmo:getSensorData(types, moduleID, callback, fallback)
     if callback == nil then
         callback = function() end
     end
@@ -97,7 +97,7 @@ function Netatmo:getSensorData(types, moduleID, callback)
         end
     end
     local authCallback = function(response)
-        self:getStationsData(getStationsDataCallback)
+        self:getStationsData(getStationsDataCallback, fallback)
     end
     local searchDevicesCallback = function(stations)
         if self.device_id == "" then
@@ -124,13 +124,13 @@ function Netatmo:getSensorData(types, moduleID, callback)
         end
     end
     if string.len(moduleID) < 10 or self.device_id == "" then
-        self:searchDevices(types, searchDevicesCallback)
+        self:searchDevices(types, searchDevicesCallback, fallback)
     else
         searchDevicesCallback({{modules = {{id = moduleID}}}})
     end
 end
 
-function Netatmo:getWeatherData(callback)
+function Netatmo:getWeatherData(callback, fallback)
     local getStationsDataCallback = function(devices)
         local device = devices[1]
         local weatherData = {
@@ -157,12 +157,12 @@ function Netatmo:getWeatherData(callback)
         end
     end
     local authCallback = function(response)
-        self:getStationsData(getStationsDataCallback)
+        self:getStationsData(getStationsDataCallback, fallback)
     end
-    self:auth(authCallback)
+    self:auth(authCallback, fallback)
 end
 
-function Netatmo:getStationsData(callback, attempt)
+function Netatmo:getStationsData(callback, fallback,attempt)
     if attempt == nil then
         attempt = 0
     end
@@ -171,7 +171,7 @@ function Netatmo:getStationsData(callback, attempt)
             return
         end
         if response.status == 401 or response.status == 403 then
-            self.config:setAccessToken('')
+            self:setAccessToken('')
             attempt = 2
         end
         if attempt < 3 then
@@ -179,10 +179,13 @@ function Netatmo:getStationsData(callback, attempt)
             fibaro.setTimeout(3000, function()
                 QuickApp:debug('Netatmo:getStationData - Retry attempt #' .. attempt)
                 local authCallback = function(response)
-                    self:getStationsData(callback, attempt)
+                    self:getStationsData(callback, fallback, attempt)
                 end
-                self:auth(authCallback)
+                self:auth(authCallback, fallback)
             end)
+        end
+        if fallback ~= nil then
+            fallback(response)
         end
     end
     local success = function(response)
@@ -205,9 +208,10 @@ function Netatmo:getStationsData(callback, attempt)
     self.http:get(url, success, fail, headers)
 end
 
-function Netatmo:auth(callback)
+function Netatmo:auth(callback, fallback)
     if string.len(self:getAccessToken()) > 10 then
         -- QuickApp:debug('Already authenticated')
+        self:syncAccessToken()
         if callback ~= nil then
             callback({})
         end
@@ -225,8 +229,8 @@ function Netatmo:auth(callback)
         if self.access_token ~= "" and response.status == 401 then
             self:setAccessToken('')
         end
-        if callback ~= nil then
-            callback(response)
+        if fallback ~= nil then
+            fallback(response)
         end
     end
     if string.len(self.refresh_token) < 10 then
@@ -279,4 +283,10 @@ end
 function Netatmo:setRefreshToken(refresh_token)
     self.refresh_token = refresh_token
     self.config:setRefreshToken(refresh_token)
+end
+
+function Netatmo:syncAccessToken()
+    if self.access_token then
+        self.config:syncAccessToken(self.access_token)
+    end
 end

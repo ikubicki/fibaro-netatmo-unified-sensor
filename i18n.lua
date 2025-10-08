@@ -28,6 +28,8 @@ phrases = {
         ['search-row-station-modules'] = '__ Wykryto %d modułów',
         ['search-row-module'] = '____ MODUŁ %s (ID: %s, typ: %s)',
         ['search-row-module_types'] = '____ Typy danych: %s',
+        ['error-updates'] = '[%d] Nie można pobrać aktualizacji: %s',
+        ['error-search'] = '[%d] Nie można wyszukać urządzeń: %s',
     },
     en = {
         ['search-devices'] = 'Search devices',
@@ -40,6 +42,8 @@ phrases = {
         ['search-row-station-modules'] = '__ %d modules detected',
         ['search-row-module'] = '____ MODULE %s (ID: %s, type: %s)',
         ['search-row-module_types'] = '____ Data types: %s',
+        ['error-updates'] = '[%d] Failed to fetch updates: %s',
+        ['error-search'] = '[%d] Failed to search for devices: %s',
     },
     de = {
         ['search-devices'] = 'Geräte suchen',
@@ -52,5 +56,7 @@ phrases = {
         ['search-row-station-modules'] = '__ %d module erkannt',
         ['search-row-module'] = '____ MODULE %s (ID: %s, typ: %s)',
         ['search-row-module_types'] = '____ Datentypen: %s',
+        ['error-updates'] = '[%d] Updates konnten nicht abgerufen werden: %s',
+        ['error-search'] = '[%d] Geräte konnten nicht gesucht werden: %s',
     }
 }
