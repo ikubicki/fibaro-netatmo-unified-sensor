@@ -1,7 +1,7 @@
 --[[
 Netatmo Unified Sensor
 @author ikubicki
-@version 1.2.0
+@version 1.2.1
 ]]
 function QuickApp:onInit()
     self.config = Config:new(self)
@@ -48,7 +48,7 @@ function QuickApp:pullNetatmoData()
         end
     end
     local fallback = function(response)
-        self:updateView("label", "text", string.format(self.i18n:get('error-updates'), response.status, response.data))
+        self:updateView("label", "text", string.format(self.i18n:get('error-updates'), response.status or 0, response.data or self.i18n:get('unknown-error')))
         self:updateView("button2_2", "text", self.i18n:get('refresh'))
         if self.properties.dead == false then
             self:setDeadProperty(true)
@@ -84,7 +84,7 @@ function QuickApp:searchEvent()
         end
     end
     local fallback = function(response)
-        self:updateView("label", "text", string.format(self.i18n:get('error-search'), response.status, response.data))
+        self:updateView("label", "text", string.format(self.i18n:get('error-search'), response.status or 0, response.data or self.i18n:get('unknown-error')))
         self:updateView("button2_1", "text", self.i18n:get('search-devices'))
         if self.properties.dead == false then
             self:setDeadProperty(true)

@@ -167,6 +167,7 @@ function Netatmo:getStationsData(callback, fallback,attempt)
         attempt = 0
     end
     local fail = function(response)
+        QuickApp:warning('Unable to pull stations data [' .. (response.status or 0) .. ']')
         if response.status == 400 then
             return
         end

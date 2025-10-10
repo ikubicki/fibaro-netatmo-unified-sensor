@@ -30,6 +30,7 @@ phrases = {
         ['search-row-module_types'] = '____ Typy danych: %s',
         ['error-updates'] = '[%d] Nie można pobrać aktualizacji: %s',
         ['error-search'] = '[%d] Nie można wyszukać urządzeń: %s',
+        ['unknown-error'] = 'Nieznany błąd',
     },
     en = {
         ['search-devices'] = 'Search devices',
@@ -44,6 +45,7 @@ phrases = {
         ['search-row-module_types'] = '____ Data types: %s',
         ['error-updates'] = '[%d] Failed to fetch updates: %s',
         ['error-search'] = '[%d] Failed to search for devices: %s',
+        ['unknown-error'] = 'Unknown error',
     },
     de = {
         ['search-devices'] = 'Geräte suchen',
@@ -58,5 +60,6 @@ phrases = {
         ['search-row-module_types'] = '____ Datentypen: %s',
         ['error-updates'] = '[%d] Updates konnten nicht abgerufen werden: %s',
         ['error-search'] = '[%d] Geräte konnten nicht gesucht werden: %s',
+        ['unknown-error'] = 'Unbekannter Fehler',
     }
 }
